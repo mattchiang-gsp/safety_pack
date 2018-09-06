@@ -16,7 +16,12 @@
 
   Written by Dean Miller, James DeVito & ladyada for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
+
+  Modified by Matthew Chiang for GSP LABS.
  ***************************************************************************/
+
+#include "pitches.h" // tone constants
+
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ILI9341.h>
@@ -75,13 +80,13 @@
 #endif
 
 //Comment this out to remove the text overlay
-//#define SHOW_TEMP_TEXT
+#define SHOW_TEMP_TEXT
 
 //low range of the sensor (this will be blue on the screen)
 #define MINTEMP 20
 
 //high range of the sensor (this will be red on the screen)
-#define MAXTEMP 28
+#define MAXTEMP 32
 
 //the colors we will be using
 const uint16_t camColors[] = {0x480F,
@@ -147,6 +152,11 @@ void setup() {
   }
     
   Serial.println("-- Thermal Camera Test --");
+
+  ledcSetup(0, 1E5, 12);
+  ledcAttachPin(21, 0);
+
+  Serial.println("-- Piezo Buzzer Test --");
 }
 
 void loop() {
@@ -180,9 +190,17 @@ void drawpixels(float *p, uint8_t rows, uint8_t cols, uint8_t boxWidth, uint8_t 
   for (int y=0; y<rows; y++) {
     for (int x=0; x<cols; x++) {
       float val = get_point(p, rows, cols, x, y);
-      if(val >= MAXTEMP) colorTemp = MAXTEMP;
-      else if(val <= MINTEMP) colorTemp = MINTEMP;
-      else colorTemp = val;
+      if (val >= MAXTEMP) {
+        colorTemp = MAXTEMP;
+        toggleBuzz(true);
+        return;
+      } else if (val <= MINTEMP) {
+        colorTemp = MINTEMP;
+//        toggleBuzz(false);
+      } else {
+        colorTemp = val;
+//        toggleBuzz(false);
+      }
       
       uint8_t colorIndex = map(colorTemp, MINTEMP, MAXTEMP, 0, 255);
       colorIndex = constrain(colorIndex, 0, 255);
@@ -199,3 +217,21 @@ void drawpixels(float *p, uint8_t rows, uint8_t cols, uint8_t boxWidth, uint8_t 
     } 
   }
 }
+
+void toggleBuzz(bool flag) {
+  if (flag) {
+    // turn on buzzing
+    ledcWriteTone(0, 80);
+//    uint8_t octave = -4;
+//    ledcWriteNote(0, NOTE_C, octave);
+    delay(200);
+    // delay(500);
+    ledcWrite(0, 0);
+    Serial.println("BUZZ");
+  } else {
+    // turn off buzzing
+    ledcWrite(0, 0);
+    Serial.println("OFF");
+  }
+}
+
