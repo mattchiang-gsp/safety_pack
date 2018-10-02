@@ -22,6 +22,60 @@
 
 #include "pitches.h" // tone constants
 
+int tempo[] = {
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+ 
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+ 
+  9, 9, 9,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+ 
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+ 
+  9, 9, 9,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+  12, 12, 12, 12,
+};
+
+int melody[] = {
+  NOTE_E7, NOTE_E7, 0, NOTE_E7,
+  0, NOTE_C7, NOTE_E7, 0,
+  NOTE_G7, 0, 0,  0,
+  NOTE_G6, 0, 0, 0,
+ 
+  NOTE_C7, 0, 0, NOTE_G6,
+  0, 0, NOTE_E6, 0,
+  0, NOTE_A6, 0, NOTE_B6,
+  0, NOTE_AS6, NOTE_A6, 0,
+ 
+  NOTE_G6, NOTE_E7, NOTE_G7,
+  NOTE_A7, 0, NOTE_F7, NOTE_G7,
+  0, NOTE_E7, 0, NOTE_C7,
+  NOTE_D7, NOTE_B6, 0, 0,
+ 
+  NOTE_C7, 0, 0, NOTE_G6,
+  0, 0, NOTE_E6, 0,
+  0, NOTE_A6, 0, NOTE_B6,
+  0, NOTE_AS6, NOTE_A6, 0,
+ 
+  NOTE_G6, NOTE_E7, NOTE_G7,
+  NOTE_A7, 0, NOTE_F7, NOTE_G7,
+  0, NOTE_E7, 0, NOTE_C7,
+  NOTE_D7, NOTE_B6, 0, 0
+};
+
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ILI9341.h>
@@ -86,7 +140,7 @@
 #define MINTEMP 20
 
 //high range of the sensor (this will be red on the screen)
-#define MAXTEMP 32
+#define MAXTEMP 28
 
 //the colors we will be using
 const uint16_t camColors[] = {0x480F,
@@ -221,10 +275,12 @@ void drawpixels(float *p, uint8_t rows, uint8_t cols, uint8_t boxWidth, uint8_t 
 void toggleBuzz(bool flag) {
   if (flag) {
     // turn on buzzing
-    ledcWriteTone(0, 80);
+    ledcWrite(0, 240);
+//    ledcWriteTone(0, 80);
+      playAlarmSound();
 //    uint8_t octave = -4;
 //    ledcWriteNote(0, NOTE_C, octave);
-    delay(200);
+    delay(5);
     // delay(500);
     ledcWrite(0, 0);
     Serial.println("BUZZ");
@@ -233,5 +289,35 @@ void toggleBuzz(bool flag) {
     ledcWrite(0, 0);
     Serial.println("OFF");
   }
+}
+
+void sing() {
+  int size = sizeof(melody) / sizeof(int);
+  for (int thisNote = 0; thisNote < size; thisNote++) {
+    int noteDuration = 1000 / tempo[thisNote];
+
+    ledcWriteTone(0, melody[thisNote]);
+
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+
+    ledcWriteTone(0, 0);
+  }
+}
+
+void playAlarmSound() {
+  ledcWriteTone(0, NOTE_B6);
+  delay(10);
+  ledcWriteTone(0, NOTE_D7);
+  delay(10);
+  ledcWriteTone(0, NOTE_E7);
+  delay(10);
+  ledcWriteTone(0, NOTE_F7);
+  delay(10);
+  ledcWriteTone(0, NOTE_G7);
+  delay(10);
+  ledcWriteTone(0, NOTE_A7);
+  delay(10);
+  ledcWriteTone(0, NOTE_B7);
 }
 
